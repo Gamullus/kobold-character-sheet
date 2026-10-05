@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kobold Character Sheet — v0.2</title>
+  <style>
+    :root{
+      --bg:#171612;
+      --panel:#24211b;
+      --card:#302b22;
+      --border:#8e7b55;
+      --border-dark:#4f4533;
+      --text:#f3ead8;
+      --muted:#b8aa90;
+      --accent:#d6b96d;
+      --accent-soft:#4a3f28;
+      --good:#90b77d;
+      --danger:#c98072;
+      --shadow:#0e0d0b;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      line-height:1.4;
+    }
+    button,input{font:inherit}
+    button{color:inherit}
+    .app{
+      width:min(1040px,100%);
+      margin:0 auto;
+      padding:18px;
+    }
+    .header{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:14px;
+    }
+    .eyebrow{
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      font-size:12px;
+      letter-spacing:.18em;
+      color:var(--muted);
+    }
+    h1{font-size:26px;line-height:1.1;margin:4px 0 0}
+    .subtitle{color:var(--muted);font-size:14px;margin-left:8px;font-weight:500}
+    .layout{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 0fr;
+      gap:0;
+      transition:grid-template-columns .18s ease,gap .18s ease;
+    }
+    .app.skills-open .layout{
+      grid-template-columns:minmax(0,1fr) minmax(285px,.46fr);
+      gap:14px;
+    }
+    .main{min-width:0;display:grid;gap:14px}
+    .panel{
+      background:var(--panel);
+      border:3px solid var(--border);
+      outline:2px solid var(--border-dark);
+      outline-offset:-6px;
+      box-shadow:0 3px 0 var(--shadow);
+      padding:14px;
+    }
+    .card{
+      background:var(--card);
+      border:2px solid var(--border-dark);
+      box-shadow:inset 0 0 0 1px #6b5b3d;
+    }
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(6,1fr);
+      gap:8px;
+    }
+    .stat{
+      text-align:center;
+      padding:10px 6px;
+      min-width:0;
+    }
+    .stat-label{
+      color:var(--muted);
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      font-size:11px;
+    }
+    .stat-mod{
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      font-size:24px;
+      font-weight:900;
+      line-height:1.05;
+      margin-top:2px;
+    }
+    .stat-score{font-size:12px;color:var(--muted);margin-top:2px}
+    .combat-summary{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:10px;
+      text-align:center;
+    }
+    .summary-value{
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      font-size:30px;
+      font-weight:900;
+      line-height:1.05;
+    }
+    .section-label{
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      color:var(--muted);
+      font-size:12px;
+      letter-spacing:.14em;
+    }
+    .hp-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .hp-main{
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      font-weight:900;
+      font-size:40px;
+      line-height:1.1;
+      margin-top:2px;
+    }
+    .hp-main span{font-size:20px;color:var(--muted)}
+    .temp{text-align:right}
+    .temp strong{
+      display:block;
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      font-size:26px;
+    }
+    .bar{
+      height:14px;
+      background:var(--card);
+      border:2px solid var(--border-dark);
+      margin-top:12px;
+      overflow:hidden;
+    }
+    .bar > div{height:100%;background:var(--accent);width:84.2%;transition:width .15s ease}
+    .hp-controls{
+      display:grid;
+      grid-template-columns:48px minmax(86px,1fr) 48px;
+      gap:8px;
+      margin-top:12px;
+    }
+    .dual{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      margin-top:8px;
+    }
+    .btn{
+      min-height:46px;
+      border:2px solid var(--border);
+      background:var(--card);
+      color:var(--text);
+      padding:9px 12px;
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      font-weight:850;
+      cursor:pointer;
+      box-shadow:0 2px 0 var(--shadow);
+    }
+    .btn:hover{background:#3a3328}
+    .btn:active{transform:translateY(1px);box-shadow:none}
+    .btn:focus-visible,.pip:focus-visible,input:focus-visible{
+      outline:3px solid var(--accent);
+      outline-offset:2px;
+    }
+    .btn.primary{background:var(--accent-soft);border-color:var(--accent)}
+    input{
+      min-height:46px;
+      width:100%;
+      border:2px solid var(--border);
+      background:var(--card);
+      color:var(--text);
+      text-align:center;
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      font-weight:800;
+      font-size:16px;
+    }
+    .message{min-height:20px;color:var(--muted);font-size:13px;margin-top:7px}
+    .save-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .save-title{font-weight:800}
+    .saves{
+      display:grid;
+      grid-template-columns:repeat(6,1fr);
+      gap:8px;
+    }
+    .save{
+      text-align:center;
+      padding:9px 5px;
+    }
+    .prof-dot{
+      display:inline-block;
+      width:9px;
+      height:9px;
+      background:var(--accent);
+      margin-right:5px;
+      vertical-align:1px;
+    }
+    .turn-panel{padding:0}
+    .turn-head{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      padding:14px;
+      border-bottom:2px solid var(--border-dark);
+    }
+    .turn-head strong{display:block;margin-top:2px}
+    .turn-head small{color:var(--muted)}
+    .action-row{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:12px;
+      align-items:center;
+      padding:12px 14px;
+      border-bottom:1px solid var(--border-dark);
+    }
+    .action-row:last-child{border-bottom:0}
+    .action-row strong{display:block}
+    .action-row small{color:var(--muted)}
+    .action-type{
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      font-size:12px;
+      font-weight:900;
+    }
+    .resources{display:grid;gap:22px}
+    .resource-head{
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:8px;
+    }
+    .resource-head strong{font-size:16px}
+    .resource-head small{color:var(--muted);margin-left:7px}
+    .resource-count{
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      font-weight:900;
+    }
+    .pips{display:flex;gap:8px;flex-wrap:wrap}
+    .pip{
+      width:44px;
+      height:44px;
+      border:2px solid var(--border);
+      background:var(--accent-soft);
+      color:var(--text);
+      cursor:pointer;
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      font-weight:900;
+      font-size:18px;
+      box-shadow:0 2px 0 var(--shadow);
+    }
+    .pip[aria-pressed="false"]{background:var(--card);opacity:.42}
+    .pip:active{transform:translateY(1px);box-shadow:none}
+    .slots{display:grid;gap:15px}
+    .rest-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .drawer{
+      min-width:0;
+      opacity:0;
+      overflow:hidden;
+      transform:translateX(10px);
+      pointer-events:none;
+      transition:opacity .15s ease,transform .15s ease;
+    }
+    .app.skills-open .drawer{
+      opacity:1;
+      transform:none;
+      pointer-events:auto;
+    }
+    .drawer .panel{position:sticky;top:14px}
+    .drawer-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .drawer h2{font-size:20px;margin:2px 0 0}
+    .passive{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      padding:9px 10px;
+      margin-bottom:9px;
+    }
+    .skill-line{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:10px;
+      padding:8px 3px;
+      border-bottom:1px solid var(--border-dark);
+      font-size:14px;
+    }
+    .skill-line:last-child{border-bottom:0}
+    .skill-line small{color:var(--muted)}
+    .skill-line strong{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+    .legend{font-size:12px;color:var(--muted);margin-bottom:5px}
+    @media(max-width:760px){
+      .stats,.saves{grid-template-columns:repeat(3,1fr)}
+      .combat-summary{grid-template-columns:repeat(2,1fr)}
+      .layout,.app.skills-open .layout{grid-template-columns:1fr;gap:14px}
+      .drawer{display:none;transform:none}
+      .app.skills-open .drawer{display:block}
+      .drawer .panel{position:static}
+    }
+    @media(max-width:440px){
+      .app{padding:10px}
+      .header{align-items:stretch}
+      .header .btn{min-width:104px}
+      h1{font-size:22px}
+      .subtitle{display:block;margin:4px 0 0}
+      .stats,.saves{grid-template-columns:repeat(2,1fr)}
+      .combat-summary{grid-template-columns:repeat(2,1fr)}
+      .dual,.rest-row{grid-template-columns:1fr}
+      .action-row{grid-template-columns:1fr}
+      .action-type{color:var(--muted)}
+    }
+    @media(prefers-reduced-motion:reduce){
+      *{transition:none!important;scroll-behavior:auto!important}
+    }
+  </style>
+</head>
+<body>
+  <main id="app" class="app">
+    <header class="header">
+      <div>
+        <div class="eyebrow">D&D 5E • 2014</div>
+        <h1>Liora <span class="subtitle">Wood Elf • Druid 5</span></h1>
+      </div>
+      <button id="skillsToggle" class="btn" type="button" aria-expanded="false">☰ Skills</button>
+    </header>
+
+    <div class="layout">
+      <div class="main">
+        <section class="panel" aria-label="Ability scores">
+          <div class="stats">
+            <div class="stat card"><div class="stat-label">STR</div><div class="stat-mod">+0</div><div class="stat-score">10</div></div>
+            <div class="stat card"><div class="stat-label">DEX</div><div class="stat-mod">+2</div><div class="stat-score">14</div></div>
+            <div class="stat card"><div class="stat-label">CON</div><div class="stat-mod">+2</div><div class="stat-score">14</div></div>
+            <div class="stat card"><div class="stat-label">INT</div><div class="stat-mod">+1</div><div class="stat-score">12</div></div>
+            <div class="stat card"><div class="stat-label">WIS</div><div class="stat-mod">+4</div><div class="stat-score">18</div></div>
+            <div class="stat card"><div class="stat-label">CHA</div><div class="stat-mod">−1</div><div class="stat-score">8</div></div>
+          </div>
+        </section>
+
+        <section class="panel" aria-label="Combat summary">
+          <div class="combat-summary">
+            <div><div class="section-label">AC</div><div class="summary-value">16</div></div>
+            <div><div class="section-label">INIT</div><div class="summary-value">+2</div></div>
+            <div><div class="section-label">SPEED</div><div class="summary-value">30</div><div class="stat-score">ft.</div></div>
+            <div><div class="section-label">PROF.</div><div class="summary-value">+3</div></div>
+          </div>
+        </section>
+
+        <section class="panel" aria-label="Hit points">
+          <div class="hp-top">
+            <div>
+              <div class="section-label">HIT POINTS</div>
+              <div class="hp-main"><b id="hpNow">32</b> <span>/ <b id="hpMax">38</b></span></div>
+            </div>
+            <div class="temp">
+              <div class="section-label">TEMP HP</div>
+              <strong id="tempHp">0</strong>
+            </div>
+          </div>
+          <div class="bar" aria-label="Hit point bar"><div id="hpBar"></div></div>
+
+          <div class="hp-controls">
+            <button id="hpMinus" class="btn" type="button" aria-label="Lose one hit point">−</button>
+            <input id="hpAmount" type="number" min="0" max="999" value="5" aria-label="Damage or healing amount" />
+            <button id="hpPlus" class="btn" type="button" aria-label="Gain one hit point">+</button>
+          </div>
+          <div class="dual">
+            <button id="damageBtn" class="btn" type="button">Damage</button>
+            <button id="healBtn" class="btn primary" type="button">Heal</button>
+          </div>
+          <div id="hpMessage" class="message" aria-live="polite"></div>
+        </section>
+
+        <section class="panel" aria-label="Saving throws">
+          <div class="save-head">
+            <div>
+              <div class="section-label">DEFENSE</div>
+              <div class="save-title">Saving Throws</div>
+            </div>
+            <div class="legend"><span class="prof-dot"></span>Proficient</div>
+          </div>
+          <div class="saves">
+            <div class="save card"><div class="stat-label">STR</div><div class="stat-mod">+0</div></div>
+            <div class="save card"><div class="stat-label">DEX</div><div class="stat-mod">+2</div></div>
+            <div class="save card"><div class="stat-label">CON</div><div class="stat-mod">+2</div></div>
+            <div class="save card"><div class="stat-label"><span class="prof-dot"></span>INT</div><div class="stat-mod">+4</div></div>
+            <div class="save card"><div class="stat-label"><span class="prof-dot"></span>WIS</div><div class="stat-mod">+7</div></div>
+            <div class="save card"><div class="stat-label">CHA</div><div class="stat-mod">−1</div></div>
+          </div>
+        </section>
+
+        <section class="panel turn-panel" aria-label="Turn actions">
+          <div class="turn-head">
+            <div><div class="section-label">YOUR TURN</div><strong>What can I do?</strong></div>
+            <small>tap resources when used</small>
+          </div>
+          <div class="action-row">
+            <div><strong>⚔ Quarterstaff</strong><small>Action • +3 to hit • 1d6 damage</small></div>
+            <div class="action-type">ACTION</div>
+          </div>
+          <div class="action-row">
+            <div><strong>✦ Produce Flame</strong><small>Cantrip • ranged spell attack</small></div>
+            <div class="action-type">ACTION</div>
+          </div>
+          <div class="action-row">
+            <div><strong>☘ Healing Word</strong><small>1st-level spell • 60 ft.</small></div>
+            <div class="action-type">BONUS</div>
+          </div>
+          <div class="action-row">
+            <div><strong>◈ Absorb Elements</strong><small>1st-level spell • when triggered</small></div>
+            <div class="action-type">REACTION</div>
+          </div>
+        </section>
+
+        <section class="panel resources" aria-label="Resources">
+          <div>
+            <div class="resource-head">
+              <div><strong>Wild Shape</strong><small>Short Rest</small></div>
+              <div id="wildCount" class="resource-count">2 / 2</div>
+            </div>
+            <div class="pips" data-resource="wild" data-max="2">
+              <button class="pip" type="button" aria-pressed="true">◆</button>
+              <button class="pip" type="button" aria-pressed="true">◆</button>
+            </div>
+          </div>
+
+          <div>
+            <div class="resource-head"><strong>Spell Slots</strong></div>
+            <div class="slots">
+              <div>
+                <div class="resource-head"><span class="section-label">1ST LEVEL</span><span id="slot1Count" class="resource-count">4 / 4</span></div>
+                <div class="pips" data-resource="slot1" data-max="4">
+                  <button class="pip" type="button" aria-pressed="true">✦</button>
+                  <button class="pip" type="button" aria-pressed="true">✦</button>
+                  <button class="pip" type="button" aria-pressed="true">✦</button>
+                  <button class="pip" type="button" aria-pressed="true">✦</button>
+                </div>
+              </div>
+              <div>
+                <div class="resource-head"><span class="section-label">2ND LEVEL</span><span id="slot2Count" class="resource-count">3 / 3</span></div>
+                <div class="pips" data-resource="slot2" data-max="3">
+                  <button class="pip" type="button" aria-pressed="true">✦</button>
+                  <button class="pip" type="button" aria-pressed="true">✦</button>
+                  <button class="pip" type="button" aria-pressed="true">✦</button>
+                </div>
+              </div>
+              <div>
+                <div class="resource-head"><span class="section-label">3RD LEVEL</span><span id="slot3Count" class="resource-count">2 / 2</span></div>
+                <div class="pips" data-resource="slot3" data-max="2">
+                  <button class="pip" type="button" aria-pressed="true">✦</button>
+                  <button class="pip" type="button" aria-pressed="true">✦</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="rest-row">
+              <button id="shortRest" class="btn" type="button">☕ Short Rest</button>
+              <button id="longRest" class="btn primary" type="button">☾ Long Rest</button>
+            </div>
+            <div id="restMessage" class="message" aria-live="polite"></div>
+          </div>
+        </section>
+      </div>
+
+      <aside id="skillsDrawer" class="drawer" aria-hidden="true">
+        <section class="panel">
+          <div class="drawer-head">
+            <div><div class="section-label">QUICK PULL</div><h2>Skills</h2></div>
+            <button id="skillsClose" class="btn" type="button" aria-label="Close skills">×</button>
+          </div>
+          <div class="passive card"><span>Passive Perception</span><strong>17</strong></div>
+          <div class="legend"><span class="prof-dot"></span>Proficient</div>
+
+          <div class="skill-line"><span>Acrobatics <small>DEX</small></span><strong>+2</strong></div>
+          <div class="skill-line"><span>Animal Handling <small>WIS</small></span><strong>+4</strong></div>
+          <div class="skill-line"><span>Arcana <small>INT</small></span><strong>+1</strong></div>
+          <div class="skill-line"><span>Athletics <small>STR</small></span><strong>+0</strong></div>
+          <div class="skill-line"><span>Deception <small>CHA</small></span><strong>−1</strong></div>
+          <div class="skill-line"><span>History <small>INT</small></span><strong>+1</strong></div>
+          <div class="skill-line"><span>Insight <small>WIS</small></span><strong>+4</strong></div>
+          <div class="skill-line"><span>Intimidation <small>CHA</small></span><strong>−1</strong></div>
+          <div class="skill-line"><span><span class="prof-dot"></span>Investigation <small>INT</small></span><strong>+4</strong></div>
+          <div class="skill-line"><span>Medicine <small>WIS</small></span><strong>+4</strong></div>
+          <div class="skill-line"><span><span class="prof-dot"></span>Nature <small>INT</small></span><strong>+4</strong></div>
+          <div class="skill-line"><span><span class="prof-dot"></span>Perception <small>WIS</small></span><strong>+7</strong></div>
+          <div class="skill-line"><span>Performance <small>CHA</small></span><strong>−1</strong></div>
+          <div class="skill-line"><span>Persuasion <small>CHA</small></span><strong>−1</strong></div>
+          <div class="skill-line"><span>Religion <small>INT</small></span><strong>+1</strong></div>
+          <div class="skill-line"><span>Sleight of Hand <small>DEX</small></span><strong>+2</strong></div>
+          <div class="skill-line"><span>Stealth <small>DEX</small></span><strong>+2</strong></div>
+          <div class="skill-line"><span><span class="prof-dot"></span>Survival <small>WIS</small></span><strong>+7</strong></div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      const app = document.getElementById("app");
+      const maxHp = 38;
+      let hp = 32;
+      let temp = 0;
+
+      const hpNow = document.getElementById("hpNow");
+      const hpBar = document.getElementById("hpBar");
+      const tempHp = document.getElementById("tempHp");
+      const hpAmount = document.getElementById("hpAmount");
+      const hpMessage = document.getElementById("hpMessage");
+      const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+
+      function renderHp() {
+        hpNow.textContent = hp;
+        tempHp.textContent = temp;
+        hpBar.style.width = ((hp / maxHp) * 100) + "%";
+      }
+
+      function getAmount() {
+        const n = Number.parseInt(hpAmount.value, 10);
+        return Number.isFinite(n) ? clamp(n, 0, 999) : 0;
+      }
+
+      function damage(n) {
+        let left = n;
+        if (temp > 0) {
+          const absorbed = Math.min(temp, left);
+          temp -= absorbed;
+          left -= absorbed;
+        }
+        hp = clamp(hp - left, 0, maxHp);
+        renderHp();
+        hpMessage.textContent = n ? `Took ${n} damage.` : "No damage applied.";
+      }
+
+      function heal(n) {
+        const before = hp;
+        hp = clamp(hp + n, 0, maxHp);
+        renderHp();
+        hpMessage.textContent = `Healed ${hp - before} HP.`;
+      }
+
+      document.getElementById("damageBtn").addEventListener("click", () => damage(getAmount()));
+      document.getElementById("healBtn").addEventListener("click", () => heal(getAmount()));
+      document.getElementById("hpMinus").addEventListener("click", () => damage(1));
+      document.getElementById("hpPlus").addEventListener("click", () => heal(1));
+      hpAmount.addEventListener("change", () => { hpAmount.value = getAmount(); });
+
+      const countIds = {
+        wild: "wildCount",
+        slot1: "slot1Count",
+        slot2: "slot2Count",
+        slot3: "slot3Count"
+      };
+
+      function updateResource(group) {
+        const key = group.dataset.resource;
+        const max = Number(group.dataset.max);
+        const active = [...group.querySelectorAll(".pip")]
+          .filter(b => b.getAttribute("aria-pressed") === "true").length;
+        document.getElementById(countIds[key]).textContent = `${active} / ${max}`;
+      }
+
+      document.querySelectorAll("[data-resource]").forEach(group => {
+        group.querySelectorAll(".pip").forEach((btn, i) => {
+          btn.setAttribute("aria-label", `${group.dataset.resource} use ${i + 1}`);
+          btn.addEventListener("click", () => {
+            const active = btn.getAttribute("aria-pressed") === "true";
+            btn.setAttribute("aria-pressed", String(!active));
+            updateResource(group);
+          });
+        });
+      });
+
+      function restore(key) {
+        const group = document.querySelector(`[data-resource="${key}"]`);
+        if (!group) return;
+        group.querySelectorAll(".pip").forEach(b => b.setAttribute("aria-pressed", "true"));
+        updateResource(group);
+      }
+
+      const restMessage = document.getElementById("restMessage");
+      document.getElementById("shortRest").addEventListener("click", () => {
+        restore("wild");
+        restMessage.textContent = "Short Rest: Wild Shape restored.";
+      });
+      document.getElementById("longRest").addEventListener("click", () => {
+        restore("wild");
+        restore("slot1");
+        restore("slot2");
+        restore("slot3");
+        hp = maxHp;
+        temp = 0;
+        renderHp();
+        restMessage.textContent = "Long Rest: HP, spell slots, and Wild Shape restored.";
+      });
+
+      const drawer = document.getElementById("skillsDrawer");
+      const toggle = document.getElementById("skillsToggle");
+      const close = document.getElementById("skillsClose");
+
+      function setSkills(open) {
+        app.classList.toggle("skills-open", open);
+        drawer.setAttribute("aria-hidden", String(!open));
+        toggle.setAttribute("aria-expanded", String(open));
+        if (open) close.focus();
+      }
+
+      toggle.addEventListener("click", () => setSkills(!app.classList.contains("skills-open")));
+      close.addEventListener("click", () => {
+        setSkills(false);
+        toggle.focus();
+      });
+      app.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && app.classList.contains("skills-open")) {
+          setSkills(false);
+          toggle.focus();
+        }
+      });
+
+      renderHp();
+    })();
+  </script>
+</body>
+</html>
