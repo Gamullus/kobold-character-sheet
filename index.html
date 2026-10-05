@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Kobold Character Sheet — v0.2</title>
+  <title>Kobold Character Sheet — v0.3</title>
   <style>
     :root{
       --bg:#171612;
@@ -308,6 +308,42 @@
     .skill-line small{color:var(--muted)}
     .skill-line strong{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
     .legend{font-size:12px;color:var(--muted);margin-bottom:5px}
+    .skill-sort{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:6px;
+      margin:10px 0 12px;
+    }
+    .sort-btn{
+      min-height:38px;
+      border:2px solid var(--border-dark);
+      background:var(--card);
+      color:var(--muted);
+      padding:6px 7px;
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      font-size:11px;
+      font-weight:850;
+      cursor:pointer;
+    }
+    .sort-btn[aria-pressed="true"]{
+      color:var(--text);
+      background:var(--accent-soft);
+      border-color:var(--accent);
+    }
+    .sort-btn:focus-visible{
+      outline:3px solid var(--accent);
+      outline-offset:2px;
+    }
+    .skill-group-label{
+      color:var(--accent);
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:.12em;
+      padding:10px 3px 4px;
+      border-bottom:1px solid var(--border);
+    }
+    .skill-group-label:first-child{padding-top:4px}
     @media(max-width:760px){
       .stats,.saves{grid-template-columns:repeat(3,1fr)}
       .combat-summary{grid-template-columns:repeat(2,1fr)}
@@ -492,24 +528,32 @@
           <div class="passive card"><span>Passive Perception</span><strong>17</strong></div>
           <div class="legend"><span class="prof-dot"></span>Proficient</div>
 
-          <div class="skill-line"><span>Acrobatics <small>DEX</small></span><strong>+2</strong></div>
-          <div class="skill-line"><span>Animal Handling <small>WIS</small></span><strong>+4</strong></div>
-          <div class="skill-line"><span>Arcana <small>INT</small></span><strong>+1</strong></div>
-          <div class="skill-line"><span>Athletics <small>STR</small></span><strong>+0</strong></div>
-          <div class="skill-line"><span>Deception <small>CHA</small></span><strong>−1</strong></div>
-          <div class="skill-line"><span>History <small>INT</small></span><strong>+1</strong></div>
-          <div class="skill-line"><span>Insight <small>WIS</small></span><strong>+4</strong></div>
-          <div class="skill-line"><span>Intimidation <small>CHA</small></span><strong>−1</strong></div>
-          <div class="skill-line"><span><span class="prof-dot"></span>Investigation <small>INT</small></span><strong>+4</strong></div>
-          <div class="skill-line"><span>Medicine <small>WIS</small></span><strong>+4</strong></div>
-          <div class="skill-line"><span><span class="prof-dot"></span>Nature <small>INT</small></span><strong>+4</strong></div>
-          <div class="skill-line"><span><span class="prof-dot"></span>Perception <small>WIS</small></span><strong>+7</strong></div>
-          <div class="skill-line"><span>Performance <small>CHA</small></span><strong>−1</strong></div>
-          <div class="skill-line"><span>Persuasion <small>CHA</small></span><strong>−1</strong></div>
-          <div class="skill-line"><span>Religion <small>INT</small></span><strong>+1</strong></div>
-          <div class="skill-line"><span>Sleight of Hand <small>DEX</small></span><strong>+2</strong></div>
-          <div class="skill-line"><span>Stealth <small>DEX</small></span><strong>+2</strong></div>
-          <div class="skill-line"><span><span class="prof-dot"></span>Survival <small>WIS</small></span><strong>+7</strong></div>
+          <div class="skill-sort" role="group" aria-label="Sort skills">
+            <button class="sort-btn" type="button" data-skill-sort="stat" aria-pressed="true">By Stat</button>
+            <button class="sort-btn" type="button" data-skill-sort="alpha" aria-pressed="false">A–Z</button>
+            <button class="sort-btn" type="button" data-skill-sort="prof" aria-pressed="false">Proficient</button>
+          </div>
+
+          <div id="skillList">
+            <div class="skill-line" data-name="Acrobatics" data-stat="DEX" data-prof="false"><span>Acrobatics <small>DEX</small></span><strong>+2</strong></div>
+            <div class="skill-line" data-name="Animal Handling" data-stat="WIS" data-prof="false"><span>Animal Handling <small>WIS</small></span><strong>+4</strong></div>
+            <div class="skill-line" data-name="Arcana" data-stat="INT" data-prof="false"><span>Arcana <small>INT</small></span><strong>+1</strong></div>
+            <div class="skill-line" data-name="Athletics" data-stat="STR" data-prof="false"><span>Athletics <small>STR</small></span><strong>+0</strong></div>
+            <div class="skill-line" data-name="Deception" data-stat="CHA" data-prof="false"><span>Deception <small>CHA</small></span><strong>−1</strong></div>
+            <div class="skill-line" data-name="History" data-stat="INT" data-prof="false"><span>History <small>INT</small></span><strong>+1</strong></div>
+            <div class="skill-line" data-name="Insight" data-stat="WIS" data-prof="false"><span>Insight <small>WIS</small></span><strong>+4</strong></div>
+            <div class="skill-line" data-name="Intimidation" data-stat="CHA" data-prof="false"><span>Intimidation <small>CHA</small></span><strong>−1</strong></div>
+            <div class="skill-line" data-name="Investigation" data-stat="INT" data-prof="true"><span><span class="prof-dot"></span>Investigation <small>INT</small></span><strong>+4</strong></div>
+            <div class="skill-line" data-name="Medicine" data-stat="WIS" data-prof="false"><span>Medicine <small>WIS</small></span><strong>+4</strong></div>
+            <div class="skill-line" data-name="Nature" data-stat="INT" data-prof="true"><span><span class="prof-dot"></span>Nature <small>INT</small></span><strong>+4</strong></div>
+            <div class="skill-line" data-name="Perception" data-stat="WIS" data-prof="true"><span><span class="prof-dot"></span>Perception <small>WIS</small></span><strong>+7</strong></div>
+            <div class="skill-line" data-name="Performance" data-stat="CHA" data-prof="false"><span>Performance <small>CHA</small></span><strong>−1</strong></div>
+            <div class="skill-line" data-name="Persuasion" data-stat="CHA" data-prof="false"><span>Persuasion <small>CHA</small></span><strong>−1</strong></div>
+            <div class="skill-line" data-name="Religion" data-stat="INT" data-prof="false"><span>Religion <small>INT</small></span><strong>+1</strong></div>
+            <div class="skill-line" data-name="Sleight of Hand" data-stat="DEX" data-prof="false"><span>Sleight of Hand <small>DEX</small></span><strong>+2</strong></div>
+            <div class="skill-line" data-name="Stealth" data-stat="DEX" data-prof="false"><span>Stealth <small>DEX</small></span><strong>+2</strong></div>
+            <div class="skill-line" data-name="Survival" data-stat="WIS" data-prof="true"><span><span class="prof-dot"></span>Survival <small>WIS</small></span><strong>+7</strong></div>
+          </div>
         </section>
       </aside>
     </div>
@@ -548,7 +592,8 @@
           left -= absorbed;
         }
         hp = clamp(hp - left, 0, maxHp);
-        renderHp();
+        sortSkills("stat");
+      renderHp();
         hpMessage.textContent = n ? `Took ${n} damage.` : "No damage applied.";
       }
 
@@ -617,6 +662,59 @@
       const drawer = document.getElementById("skillsDrawer");
       const toggle = document.getElementById("skillsToggle");
       const close = document.getElementById("skillsClose");
+      const skillList = document.getElementById("skillList");
+      const sortButtons = [...document.querySelectorAll("[data-skill-sort]")];
+      const statOrder = ["STR", "DEX", "CON", "INT", "WIS", "CHA"];
+
+      function groupLabel(text) {
+        const label = document.createElement("div");
+        label.className = "skill-group-label";
+        label.textContent = text;
+        return label;
+      }
+
+      function sortSkills(mode = "stat") {
+        const skills = [...skillList.querySelectorAll(".skill-line")];
+        skillList.querySelectorAll(".skill-group-label").forEach(el => el.remove());
+
+        sortButtons.forEach(btn => {
+          btn.setAttribute("aria-pressed", String(btn.dataset.skillSort === mode));
+        });
+
+        if (mode === "alpha") {
+          skills.sort((a, b) => a.dataset.name.localeCompare(b.dataset.name));
+          skills.forEach(skill => skillList.appendChild(skill));
+          return;
+        }
+
+        if (mode === "prof") {
+          const proficient = skills
+            .filter(skill => skill.dataset.prof === "true")
+            .sort((a, b) => a.dataset.name.localeCompare(b.dataset.name));
+          const others = skills
+            .filter(skill => skill.dataset.prof !== "true")
+            .sort((a, b) => a.dataset.name.localeCompare(b.dataset.name));
+
+          skillList.appendChild(groupLabel("PROFICIENT"));
+          proficient.forEach(skill => skillList.appendChild(skill));
+          skillList.appendChild(groupLabel("OTHER SKILLS"));
+          others.forEach(skill => skillList.appendChild(skill));
+          return;
+        }
+
+        statOrder.forEach(stat => {
+          const group = skills
+            .filter(skill => skill.dataset.stat === stat)
+            .sort((a, b) => a.dataset.name.localeCompare(b.dataset.name));
+          if (!group.length) return;
+          skillList.appendChild(groupLabel(stat));
+          group.forEach(skill => skillList.appendChild(skill));
+        });
+      }
+
+      sortButtons.forEach(btn => {
+        btn.addEventListener("click", () => sortSkills(btn.dataset.skillSort));
+      });
 
       function setSkills(open) {
         app.classList.toggle("skills-open", open);
